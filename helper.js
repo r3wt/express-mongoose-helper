@@ -1,4 +1,4 @@
-module.exports = function( mongoose, models ){
+module.exports = function( mongoose, models, options ){
 	
 	var helper = function helper(){};
 	
@@ -21,6 +21,7 @@ module.exports = function( mongoose, models ){
 	
 	helper.prototype.save = function(){
 		models[this._name] = mongoose.model(this._name,this._schema);
+		options.log('`express-mongoose-helper` created model `'+this_name'`');
 		this.clean();
 	};
 	

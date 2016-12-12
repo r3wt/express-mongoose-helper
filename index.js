@@ -1,11 +1,18 @@
 var _models = {};
 var _ = require('lodash');
 var _mongoose = require('mongoose');
+
+var _log = false;
+
 var _options = {
 	connectionString: '',
 	connectionOptions: {},
 	path: '',
-	inject: ['helper','types']
+	inject: ['helper','types'],
+	debug: false,
+	log: function(){
+		return this.debug && console.log.apply(console,arguments);
+	},
 };
 
 var helper = require('./helper.js')(_mongoose,_models);
@@ -22,19 +29,45 @@ var vars = {
 var _mongo = function _mongo( options ) {
 	
 	if(typeof options != 'object'){
-		throw new Error('1');
+		throw new Error('`express-mongoose-helper` expects parameter options to be of type object.');
 	}
 	
 	options = _.extend({},_options,options);
 	
+	var helper = require('./helper.js')(_mongoose,_models,options);
+
+	//injectables
+	var vars = {
+		mongoose: _mongoose,
+		model: _mongoose.model,
+		schema: _mongoose.Schema,
+		types: _mongoose.Schema.Types,
+		helper: helper
+	};
+	
 	if(options.connectionString == ''){
-		throw new Error('2');
+		throw new Error('`express-mongoose-helper` option `connectionString` cannot be blank.');
 	}
 	
 	_mongoose.connect(options.connectionString,options.connectionOptions);
 	
+	_mongoose.connection.on('connected', function () {  
+	  options.log('`express-mongoose-helper` Mongoose connected.');
+	}); 
+
+	// If the connection throws an error
+	_mongoose.connection.on('error',function (err) {  
+	  var m = '`express-mongoose-helper` error connecting to database with message: '+err;
+	  throw new Error( m );
+	}); 
+
+	// When the connection is disconnected
+	_mongoose.connection.on('disconnected', function () {  
+	  options.log('`express-mongoose-helper` Mongoose disconnected.'); 
+	});
+	
 	if(options.path == ''){
-		throw new Error('3');
+		throw new Error('`express-mongoose-helper` option `path` cannot be blank.');
 	}
 	
 	var app = this;
@@ -58,10 +91,11 @@ var _mongo = function _mongo( options ) {
 		files.forEach(function(file){
 			
 			if(file.slice((file.lastIndexOf(".") - 1 >>> 0) + 2) == 'js'){
-				var f = require(f);
+				options.log('`express-mongoose-helper` loading file `'+file+'`');
+				var f = require(file);
 				
 				if(typeof f != 'function'){
-					throw new Error('express-mongoose expects required modules to be a function');
+					throw new Error('`express-mongoose-helper` expects required modules to be a function');
 				}
 				
 				f.apply(f,inject);
