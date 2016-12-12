@@ -10,7 +10,7 @@ module.exports = function( Helper, Types ){
 			last: String,
 		},
 		email: String,
-		referredBy: { type: types.ObjectId, ref: 'User',, default: null }
+		referredBy: { type: Types.ObjectId, ref: 'User', default: null }
 	},function(schema){
 		//here you can add indexes, static methods, instance methods, plugins etc to the schema.
 		schema.index({ email: 1},{unique: true});

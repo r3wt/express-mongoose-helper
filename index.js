@@ -57,7 +57,7 @@ var _mongo = function _mongo( options ) {
 
 	// If the connection throws an error
 	_mongoose.connection.on('error',function (err) {  
-	  var m = '`express-mongoose-helper` error connecting to database with message: '+err;
+	  var m = '`express-mongoose-helper` error connecting to database with message: `'+err+'`';
 	  throw new Error( m );
 	}); 
 
@@ -86,13 +86,15 @@ var _mongo = function _mongo( options ) {
 		}
 	}
 	
-	fs.readDir(options.path,function(err,files){
+	var fs = require('fs');
+	
+	fs.readdir(options.path,function(err,files){
 		
 		files.forEach(function(file){
 			
 			if(file.slice((file.lastIndexOf(".") - 1 >>> 0) + 2) == 'js'){
 				options.log('`express-mongoose-helper` loading file `'+file+'`');
-				var f = require(file);
+				var f = require(options.path+file);
 				
 				if(typeof f != 'function'){
 					throw new Error('`express-mongoose-helper` expects required modules to be a function');

@@ -21,7 +21,7 @@ module.exports = function( mongoose, models, options ){
 	
 	helper.prototype.save = function(){
 		models[this._name] = mongoose.model(this._name,this._schema);
-		options.log('`express-mongoose-helper` created model `'+this_name'`');
+		options.log('`express-mongoose-helper` created model `'+this._name+'`');
 		this.clean();
 	};
 	
