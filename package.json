@@ -19,5 +19,8 @@
     "mongodb"
   ],
   "author": "Garrett Morris <stuckinabox@live.com> (https://github.com/r3wt)",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "mongoose": "^4.7.2"
+  }
 }

@@ -3,7 +3,7 @@
 module.exports = function( Helper, Types ){
 
 	//creates a mongoose model named user and adds it to the express app.
-	Helper.auto('User',{
+	Helper.model('User',{
 		name: {
 			first: String,
 			middle: String,

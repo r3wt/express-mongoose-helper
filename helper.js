@@ -24,7 +24,7 @@ module.exports = function( mongoose, models ){
 		this.clean();
 	};
 	
-	helper.prototype.auto = function(name,schema,cb){
+	helper.prototype.model = function(name,schema,cb){
 		this.name(name);
 		this.schema(schema,cb);
 		this.save();
