@@ -7,6 +7,33 @@ adds app.model() function and app.model[ModelName] to express.
 
 ` npm install --save express-mongoose-helper`
 
+# basic info
+---
+module signature
+```js
+function( 
+	Express.Application app, //the express application
+	Object options //options for usage with the library. see options below.
+)
+```
+
+app.model function signature
+```js
+	app.model( 
+		String name, //name of the model
+		Object schema, //plain object defining a mongoose schema.
+		Function callback //a function callback that receives the generated mongoose schema. for adding indexes, static methods, instance methods, plugins to model.
+	)
+```
+
+model signature (Note: you can edit what is injected to the required module, these are the defaults.)
+```js
+	function(
+		Express.Application app, //the Express app
+		mongoose.Schema.Types Types,//the mongoose Types object for convenience.
+	)
+```
+
 # basic usage
 
 
