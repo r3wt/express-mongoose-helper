@@ -1,9 +1,8 @@
 //an example mongoose model in express-mongoose-helper
-
-module.exports = function( Helper, Types ){
+module.exports = function( app, Types ){
 
 	//creates a mongoose model named user and adds it to the express app.
-	Helper.model('User',{
+	app.model('User',{
 		name: {
 			first: String,
 			middle: String,
@@ -16,6 +15,6 @@ module.exports = function( Helper, Types ){
 		schema.index({ email: 1},{unique: true});
 	});
 	
-	// now you can access the model like `app.models.User` from your controllers.
+	// now you can access the model like `app.model.User` from your controllers.
 
 };

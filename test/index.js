@@ -1,11 +1,18 @@
 var app = require('express')();
 
-require('../index')(app);
-
-app.mongoose({
+require('../index')(app,{
 	path: __dirname + '/models/',
 	connectionString: 'mongodb://localhost/test',
 	debug: true
 });
 
-app.listen(3000);
+app.on('mongoose.models.ready',function(){
+	
+	for(var prop in app.model){
+		console.log(prop);
+	}
+	
+	app.listen(3000);
+	
+});
+

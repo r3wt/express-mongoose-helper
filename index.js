@@ -1,32 +1,18 @@
-var _models = {};
-var _ = require('lodash');
-var _mongoose = require('mongoose');
+var mongoose = require('mongoose'),
+	_ = require('lodash'),
+	fs = require('fs'),
+	_options = {
+		connectionString: '',
+		connectionOptions: {},
+		path: '',
+		inject: ['app','types'],
+		debug: false,
+		log: function(){
+			return this.debug && console.log.apply(console,arguments);
+		},
+	};
 
-var _log = false;
-
-var _options = {
-	connectionString: '',
-	connectionOptions: {},
-	path: '',
-	inject: ['helper','types'],
-	debug: false,
-	log: function(){
-		return this.debug && console.log.apply(console,arguments);
-	},
-};
-
-var helper = require('./helper.js')(_mongoose,_models);
-
-//injectables
-var vars = {
-	mongoose: _mongoose,
-	model: _mongoose.model,
-	schema: _mongoose.Schema,
-	types: _mongoose.Schema.Types,
-	helper: helper
-};
-
-var _mongo = function _mongo( options ) {
+module.exports = function(app,options){
 	
 	if(typeof options != 'object'){
 		throw new Error('`express-mongoose-helper` expects parameter options to be of type object.');
@@ -34,49 +20,55 @@ var _mongo = function _mongo( options ) {
 	
 	options = _.extend({},_options,options);
 	
-	var helper = require('./helper.js')(_mongoose,_models,options);
-
-	//injectables
-	var vars = {
-		mongoose: _mongoose,
-		model: _mongoose.model,
-		schema: _mongoose.Schema,
-		types: _mongoose.Schema.Types,
-		helper: helper
+	var model = function model(name,schema,callback){
+	
+		var schema = new mongoose.Schema(schema);
+		
+		if(typeof callback == 'function'){
+			callback(schema);
+		}
+		
+		model[name] = mongoose.model(name,schema);
+		
+		options.log('`express-mongoose-helper` created model `app.model.'+name+'`');
+		
 	};
 	
-	if(options.connectionString == ''){
-		throw new Error('`express-mongoose-helper` option `connectionString` cannot be blank.');
-	}
+	Object.defineProperty(app,'model',{
+		get: function(){ return model; },
+		set: function(){ return false; }
+	});
 	
-	_mongoose.connect(options.connectionString,options.connectionOptions);
+	mongoose.connect(options.connectionString,options.connectionOptions);
 	
-	_mongoose.connection.on('connected', function () {  
+	mongoose.connection.on('connected', function () {  
 	  options.log('`express-mongoose-helper` Mongoose connected.');
+	  app.emit('mongoose.connected');
 	}); 
 
 	// If the connection throws an error
-	_mongoose.connection.on('error',function (err) {  
-	  var m = '`express-mongoose-helper` error connecting to database with message: `'+err+'`';
-	  throw new Error( m );
+	mongoose.connection.on('error',function (err) { 
+	  options.log('`express-mongoose-helper` error'+err);
+	  app.emit('mongoose.error',err);
 	}); 
 
 	// When the connection is disconnected
-	_mongoose.connection.on('disconnected', function () {  
-	  options.log('`express-mongoose-helper` Mongoose disconnected.'); 
+	mongoose.connection.on('disconnected', function () {  
+	  app.emit('mongoose.disconnected');
 	});
 	
 	if(options.path == ''){
 		throw new Error('`express-mongoose-helper` option `path` cannot be blank.');
 	}
 	
-	var app = this;
-	
-	Object.defineProperty(app, 'models', {
-	  get: function() { return _models; },
-	  set: function( v ) { return false; },
-	  writeable: false
-	});
+	//injectables
+	var vars = {
+		mongoose: mongoose,
+		model: mongoose.model,
+		schema: mongoose.Schema,
+		types: mongoose.Schema.Types,
+		app: app
+	};
 	
 	var inject = [];
 	
@@ -85,8 +77,6 @@ var _mongo = function _mongo( options ) {
 			inject.push(vars[options.inject[i]]);
 		}
 	}
-	
-	var fs = require('fs');
 	
 	fs.readdir(options.path,function(err,files){
 		
@@ -106,12 +96,8 @@ var _mongo = function _mongo( options ) {
 			
 		});
 		
+		app.emit('mongoose.models.ready');
+		
 	});
-
-};
-
-module.exports = function( app ){
-	
-	app.mongoose = _mongo.bind( app );
 	
 };
