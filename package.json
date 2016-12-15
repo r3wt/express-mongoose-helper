@@ -1,6 +1,6 @@
 {
   "name": "express-mongoose-helper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "super simple helper for using mongoose in an express app.",
   "main": "index.js",
   "directories": {
