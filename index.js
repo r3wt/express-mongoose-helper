@@ -10,6 +10,7 @@ var mongoose = require('mongoose'),
 		log: function(){
 			return this.debug && console.log.apply(console,arguments);
 		},
+		extend: function(mongoose){} //extend mongoose with global plugins, custom types, etc.
 	};
 
 module.exports = function(app,options){
@@ -19,6 +20,10 @@ module.exports = function(app,options){
 	}
 	
 	options = _.extend({},_options,options);
+	
+	if(typeof options.extend == 'function'){
+		options.extend(mongoose);
+	}
 	
 	var model = function model(name,schema,callback){
 	

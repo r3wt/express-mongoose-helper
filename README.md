@@ -99,6 +99,7 @@ options = {
 	log: function(){
 		return this.debug && console.log.apply(console,arguments);
 	}, //default logging function, can be changed
+	extend: function(mongoose){} //extend mongoose with global plugins, custom types, etc.
 };
 ```
 
@@ -106,10 +107,10 @@ options = {
 # events
 ---
 several events are emitted. they are listed below.
-`mongoose.models.ready` = emitted when all the model files have been loaded and added to the app.
-`mongoose.connected` = emitted when database connection is established.
-`mongoose.disconnected` = emitted when database is disconnected.
-`mongoose.error` = emitted when an error occurs establishing connection to mongodb.
+- `mongoose.models.ready` = emitted when all the model files have been loaded and added to the app.
+- `mongoose.connected` = emitted when database connection is established.
+- `mongoose.disconnected` = emitted when database is disconnected.
+- `mongoose.error` = emitted when an error occurs establishing connection to mongodb.
 
 
 
