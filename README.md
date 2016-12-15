@@ -11,10 +11,10 @@ adds app.model() function and app.model[ModelName] to express.
 ---
 module signature
 ```js
-function( 
-	Express.Application app, //the express application
-	Object options //options for usage with the library. see options below.
-)
+	function( 
+		Express.Application app, //the express application
+		Object options //options for usage with the library. see options below.
+	)
 ```
 
 app.model function signature
