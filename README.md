@@ -18,11 +18,13 @@ module signature
 ```
 
 app.model function signature
+> for legacy reasons, schemaOptions and callback may be given in either order, or not at all. 
 ```js
 	app.model( 
 		String name, //name of the model
 		Object schema, //plain object defining a mongoose schema.
-		Function callback //a function callback that receives the generated mongoose schema. for adding indexes, static methods, instance methods, plugins to model.
+		Object schemaOptions, // optional schemaOptions to pass to the mongoose schema constructor
+		Function callback //optional a function callback that receives the generated mongoose schema. for adding indexes, static methods, instance methods, plugins to model.
 	)
 ```
 
