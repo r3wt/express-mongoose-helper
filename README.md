@@ -28,11 +28,12 @@ app.model function signature
 	)
 ```
 
-model signature (Note: you can edit what is injected to the required module, these are the defaults.)
+model file signature (Note: you can edit what is injected to the required module, these are the defaults.)
+> each model file should export a function of the following signature.
 ```js
 	function(
 		Express.Application app, //the Express app
-		mongoose.Schema.Types Types,//the mongoose Types object for convenience.
+		mongoose.Schema.Types Types,//the mongoose.Schema.Types object for convenience/brevity.
 	)
 ```
 
@@ -50,14 +51,18 @@ require('express-mongoose-helper')(app,{
 	debug: true
 });
 
-//if you want to load your models/start your app only after the models are ready you can do this.
+//if you want to load your controllers,start your app, any other action requiring the models to be loaded/defined
+// you may listen for the 'mongoose.models.ready' event like so:
 app.on('mongoose.models.ready',function(){
 	
 	for(var prop in app.model){
 		console.log(prop);//model is a function, but also a k/v store of the models of your app.
 	}
 	
-	app.listen(3000);
+	//load our controllers
+	require('./routes')(app);//since we waited for models to load, they will be accessible by the controllers.
+	
+	app.listen(3000);//start up our server
 	
 });
 ```
@@ -83,6 +88,25 @@ module.exports = function( app, Types ){
 	});
 	
 	// now you can access the model like `app.model.User` from your controllers.
+
+};
+```
+
+**new in version 1.0.2, app.model supports a 4th parameter, schemaOptions**
+> please note, to avoid breaking backwards compatability schemaOptions and callback can be given in either order. both are optional.
+```js
+module.exports = function( app, Types ){
+	
+	app.model('UploadedFile',{
+		path: String,
+		owner: { type: Types.ObjectId, ref: 'User' },
+		mimetype: String,
+		filesize: Number,
+	}, { timestamps: true },function(schema){
+	
+		schema.index({ filesize: 1 });
+	
+	});
 
 };
 ```
