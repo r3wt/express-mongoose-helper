@@ -53,7 +53,7 @@ module.exports = function(app,options){
             break;
         }
     
-        var schema = new mongoose.Schema(schema);
+        var schema = new mongoose.Schema(schema,schemaOptions);
         
         if(typeof callback == 'function'){
             callback(schema);
@@ -64,6 +64,10 @@ module.exports = function(app,options){
         options.log('`express-mongoose-helper` created model `app.model.'+name+'`');
         
     };
+	
+	model.exists = function( modelName ){
+		return model.hasOwnProperty( modelName ) && model[modelName] instanceof mongoose.model;
+	};
     
     Object.defineProperty(app,'model',{
         get: function(){ return model; },
