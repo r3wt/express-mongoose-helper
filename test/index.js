@@ -2,7 +2,7 @@ var app = require('express')();
 
 require('../index')(app,{
 	path: __dirname + '/models/',
-	connectionString: 'mongodb://localhost/test',
+	connectionString: 'mongodb://localhost/express-mongoose-helper-testdb',
 	debug: true
 });
 

@@ -73,6 +73,8 @@ module.exports = function(app,options){
         get: function(){ return model; },
         set: function(){ return false; }
     });
+
+    options.connectionOptions.useMongoClient = true;// opt into mongoose >4.11 new connection logic lol
     
     mongoose.connect(options.connectionString,options.connectionOptions);
     
