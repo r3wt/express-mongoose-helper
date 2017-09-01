@@ -4,7 +4,7 @@ var mongoose = require('mongoose'),
         connectionString: '',
         connectionOptions: {},
         path: '',
-        inject: ['app','types'],
+        inject: [],//inject additional options
         debug: false,
         log: function(){
             return this.debug && console.log.apply(console,arguments);
@@ -12,13 +12,13 @@ var mongoose = require('mongoose'),
         extend: function(mongoose){} //extend mongoose with global plugins, custom types, etc.
     };
     
-function extend(){
-    for(var i=1;i<arguments.length;i++){
-        for(var j in arguments[i]){
-            arguments[0][j] = arguments[i][j];
+function shallow_extend(...args){
+    for(var i=1;i<args.length;i++){
+        for(var j in args[i]){
+            args[0][j] = args[i][j];
         }
     }
-    return arguments[0];
+    return args[0];
 }
 
 module.exports = function(app,options){
@@ -27,7 +27,7 @@ module.exports = function(app,options){
         throw new Error('`express-mongoose-helper` expects parameter options to be of type object.');
     }
     
-    options = extend({},_options,options);
+    options = shallow_extend({},_options,options);
     
     if(typeof options.extend == 'function'){
         options.extend(mongoose);
@@ -57,6 +57,10 @@ module.exports = function(app,options){
         
         if(typeof callback == 'function'){
             callback(schema);
+        }
+
+        if(model.hasOwnProperty(name)){
+            throw new Error(`\`express-mongoose-helper\` created model \`app.model.${name}\``);
         }
         
         model[name] = mongoose.model(name,schema);
@@ -98,26 +102,18 @@ module.exports = function(app,options){
         throw new Error('`express-mongoose-helper` option `path` cannot be blank.');
     }
     
-    //injectables
-    var vars = {
-        mongoose: mongoose,
-        model: mongoose.model,
-        schema: mongoose.Schema,
-        types: mongoose.Schema.Types,
-        app: app
-    };
-    
-    var inject = [];
+    var inject = [
+        app,
+        mongoose.Schema.Types
+    ];
     
     for(var i=0;i<options.inject.length;i++){
-        if(vars.hasOwnProperty(options.inject[i])){
-            inject.push(vars[options.inject[i]]);
-        }
+        inject.push(options.inject[i]);//now allow user supplied variables to be injected. 
     }
     
-    fs.readdir(options.path,function(err,files){
+    fs.readdir(options.path,(err,files)=>{
         
-        files.forEach(function(file){
+        files.forEach((file)=>{
             
             if(file.slice((file.lastIndexOf(".") - 1 >>> 0) + 2) == 'js'){
                 options.log('`express-mongoose-helper` loading file `'+file+'`');
@@ -127,7 +123,7 @@ module.exports = function(app,options){
                     throw new Error('`express-mongoose-helper` expects required modules to be a function');
                 }
                 
-                f.apply(f,inject);
+                f(...inject);
                 
             }
             
