@@ -10,7 +10,10 @@ module.exports = function( app, Types ){
 		},
 		email: String,
 		referredBy: { type: Types.ObjectId, ref: 'User', default: null }
-	},function(schema){
+	},function(schema,mongoose){
+        console.log(schema);
+        console.log(mongoose);
+
 		//here you can add indexes, static methods, instance methods, plugins etc to the schema.
 		schema.index({ email: 1},{unique: true});
 	});

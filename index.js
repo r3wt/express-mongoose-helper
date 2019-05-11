@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {EventEmitter} = require('events');
 const fs = require('fs');
 const defaultOptions = {
     connectionString: '',
@@ -25,7 +26,9 @@ const semverGreaterThan = function(versionA, versionB){
   return false
 }
 
-module.exports = function(app,userOptions){
+module.exports = helper;
+
+function helper(app,userOptions){
     
     if(typeof userOptions != 'object'){
         throw new Error('`express-mongoose-helper` expects parameter options to be of type object.');
@@ -60,7 +63,7 @@ module.exports = function(app,userOptions){
         var schema = new mongoose.Schema(schema,schemaOptions);
         
         if(typeof callback === 'function'){
-            callback(schema);
+            callback(schema,mongoose);
         }
 
         if(model.hasOwnProperty(name)){
@@ -68,9 +71,12 @@ module.exports = function(app,userOptions){
         }
         
         model[name] = mongoose.model(name,schema);
+
+        model[name].mongoose = ()=> mongoose;//give em a function to retrieve the mongoose instance
         
         options.log('`express-mongoose-helper` created model `app.model.'+name+'`');
         
+        return model[name];// in case they need to do something with the model
     };
 	
 	model.exists = function( modelName ){
@@ -88,6 +94,10 @@ module.exports = function(app,userOptions){
     
     options.connectionOptions.useNewUrlParser = true;
     
+    if(semverGreaterThan(mongoose.version,'5.2.9')){
+        mongoose.set('useCreateIndex', true);
+    }
+
     mongoose.connect(options.connectionString,options.connectionOptions);
     
     mongoose.connection.on('connected', function () {  
@@ -157,5 +167,12 @@ module.exports = function(app,userOptions){
         app.emit('mongoose.models.ready');
         
     });
-    
-};
+
+    return app;
+
+}
+
+helper.standalone = function(options){
+    const app = new EventEmitter;
+    return helper(app,options);
+}

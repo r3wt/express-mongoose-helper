@@ -54,13 +54,18 @@ require('express-mongoose-helper')(app,{
 //if you want to load your controllers,start your app, any other action requiring the models to be loaded/defined
 // you may listen for the 'mongoose.models.ready' event like so:
 app.on('mongoose.models.ready',function(){
+
+    // your models are now available on the express app
+    const dog = new app.model.Dog({
+        name: 'Rowdy',
+        owner: null
+    });
+
+    dog.save().then(dog=>{
+        console.log(dog.name); // Rowdy
+    })
 	
-	for(var prop in app.model){
-		console.log(prop);//model is a function, but also a k/v store of the models of your app.
-	}
-	
-	//load our controllers
-	require('./routes')(app);//since we waited for models to load, they will be accessible by the controllers.
+	//load your controllers here, so that models are available.
 	
 	app.listen(3000);//start up our server
 	
@@ -90,6 +95,39 @@ module.exports = function( app, Types ){
 	// now you can access the model like `app.model.User` from your controllers.
 
 };
+```
+
+**new in version 1.0.7:**
+- module exports a function called `standalone` for creating a standalone instance without express, useful for background scripts or with other server environments
+- when constructing models with `app.model()` the model will now be returned. the model will also contain a function you can use to get the mongoose instance.
+- callback to `app.model()` will now receive `mongoose` as a second argument in addition to `schema`.
+
+**new standalone feature**
+```js
+
+const {standalone} = require('express-mongoose-helper');
+
+const app = standalone({
+	path: __dirname + '/models/',
+	connectionString: 'mongodb://localhost/your-db',
+	debug: true
+});
+
+app.on('mongoose.models.ready',function(){
+	
+	// your backend code here
+	
+});
+
+```
+
+**changes to app.model**
+```js
+const model = app.model('Test',{foo:String},(schema,mongoose)=>{
+    //modify the schema here
+    //you can use mongoose here too
+});
+const mongoose = model.mongoose();// do something with mongoose
 ```
 
 **new in version 1.0.2, app.model supports a 4th parameter, schemaOptions**
