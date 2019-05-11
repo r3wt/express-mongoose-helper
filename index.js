@@ -1,39 +1,43 @@
-var mongoose = require('mongoose'),
-    fs = require('fs'),
-    _options = {
-        connectionString: '',
-        connectionOptions: {},
-        path: '',
-        inject: [],//inject additional options
-        debug: false,
-        log: function(){
-            return this.debug && console.log.apply(console,arguments);
-        },
-        extend: function(mongoose){} //extend mongoose with global plugins, custom types, etc.
-    };
+const mongoose = require('mongoose');
+const fs = require('fs');
+const defaultOptions = {
+    connectionString: '',
+    connectionOptions: {},
+    path: '',
+    inject: [],//inject additional options
+    debug: false,
+    log: function(){
+        return this.debug && console.log.apply(console,arguments);
+    },
+    extend: function(mongoose){} //extend mongoose with global plugins, custom types, etc.
+};
     
-function shallow_extend(...args){
-    for(var i=1;i<args.length;i++){
-        for(var j in args[i]){
-            args[0][j] = args[i][j];
-        }
-    }
-    return args[0];
+// taken from https://stackoverflow.com/a/55390173/2401804
+const semverGreaterThan = function(versionA, versionB){
+  var versionsA = versionA.split(/\./g),
+    versionsB = versionB.split(/\./g)
+  while (versionsA.length || versionsB.length) {
+    var a = Number(versionsA.shift()), b = Number(versionsB.shift())
+    if (a == b)
+      continue
+    return (a > b || isNaN(b))
+  }
+  return false
 }
 
-module.exports = function(app,options){
+module.exports = function(app,userOptions){
     
-    if(typeof options != 'object'){
+    if(typeof userOptions != 'object'){
         throw new Error('`express-mongoose-helper` expects parameter options to be of type object.');
     }
     
-    options = shallow_extend({},_options,options);
+    const options = {...defaultOptions,...userOptions};
     
     if(typeof options.extend == 'function'){
         options.extend(mongoose);
     }
     
-    var model = function model(name,schema,schemaOptions,callback){
+    function model(name,schema,schemaOptions,callback){
         
         // to keep backwards compatibility accept schemaOptions/callback in either order
         switch(true){
@@ -55,12 +59,12 @@ module.exports = function(app,options){
     
         var schema = new mongoose.Schema(schema,schemaOptions);
         
-        if(typeof callback == 'function'){
+        if(typeof callback === 'function'){
             callback(schema);
         }
 
         if(model.hasOwnProperty(name)){
-            throw new Error(`\`express-mongoose-helper\` created model \`app.model.${name}\``);
+            throw new Error(`\`express-mongoose-helper\` \`app.model.${name}\` already exists.`);
         }
         
         model[name] = mongoose.model(name,schema);
@@ -78,7 +82,11 @@ module.exports = function(app,options){
         set: function(){ return false; }
     });
 
-    options.connectionOptions.useMongoClient = true;// opt into mongoose >4.11 new connection logic lol
+    if(semverGreaterThan(mongoose.version,'4.11.0') && !semverGreaterThan(mongoose.version,'5.0.0')){
+        options.connectionOptions.useMongoClient = true;// opt into mongoose >4.11 new connection logic, but wait, it can't be over version 5  
+    }
+    
+    options.connectionOptions.useNewUrlParser = true;
     
     mongoose.connect(options.connectionString,options.connectionOptions);
     
@@ -102,7 +110,7 @@ module.exports = function(app,options){
         throw new Error('`express-mongoose-helper` option `path` cannot be blank.');
     }
     
-    var inject = [
+    const inject = [
         app,
         mongoose.Schema.Types
     ];
@@ -110,24 +118,41 @@ module.exports = function(app,options){
     for(var i=0;i<options.inject.length;i++){
         inject.push(options.inject[i]);//now allow user supplied variables to be injected. 
     }
+
+    console.log(options.path);
     
     fs.readdir(options.path,(err,files)=>{
-        
-        files.forEach((file)=>{
-            
-            if(file.slice((file.lastIndexOf(".") - 1 >>> 0) + 2) == 'js'){
-                options.log('`express-mongoose-helper` loading file `'+file+'`');
-                var f = require(options.path+file);
-                
-                if(typeof f != 'function'){
-                    throw new Error('`express-mongoose-helper` expects required modules to be a function');
+
+        console.log(files);
+
+        if(err) {
+            throw err;// throw it up throw it up
+        }
+
+        if(!Array.isArray(files)) {
+            options.log('no models to load');
+        }else{
+            files.forEach((file)=>{
+
+                const ext = file.slice((file.lastIndexOf(".") - 1 >>> 0) + 2);
+
+                if(ext=='js'){
+                    options.log('`express-mongoose-helper` loading file `'+file+'`');
+                    var f = require(options.path+file);
+                    if(typeof f !== 'function'){
+                        throw new Error('`express-mongoose-helper` expects required modules to be a function');
+                    }
+                    
+                    f(...inject);
+                }
+
+                if(ext==='mjs'){
+                    //var f = import(()=>options.path+file);
+                    options.log('`express-mongoose-helper` does not support loading EcmaScript Modules at this time. file `'+file+'` is ignored and not loaded.');
                 }
                 
-                f(...inject);
-                
-            }
-            
-        });
+            });    
+        }
         
         app.emit('mongoose.models.ready');
         

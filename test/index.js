@@ -13,6 +13,9 @@ app.on('mongoose.models.ready',function(){
 	}
 	
 	app.listen(3000);
+
+    console.log('Success! everything is working normally. goodbye');
+    process.exit(0);
 	
 });
 

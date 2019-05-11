@@ -1,13 +1,13 @@
 {
   "name": "express-mongoose-helper",
-  "version": "1.0.4",
-  "description": "super simple helper for using mongoose in an express app.",
+  "version": "1.0.5",
+  "description": "simply for your express/mongoose app with autoloaded models that are accessed through the express app instance.",
   "main": "index.js",
   "directories": {
     "example": "examples"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/index.js"
   },
   "repository": {
     "type": "git",
@@ -18,7 +18,7 @@
     "mongoose",
     "mongodb"
   ],
-  "author": "Garrett Morris <stuckinabox@live.com> (https://github.com/r3wt)",
+  "author": "Garrett Morris <gmorris_89@outlook.com> (https://github.com/r3wt)",
   "license": "MIT",
   "devDependencies": {
     "express": "^4.14.0",
