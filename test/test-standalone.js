@@ -1,6 +1,6 @@
-const helper = require('../index');
+const {standalone} = require('../index');
 
-const app = helper.standalone({
+const app = standalone({
 	path: __dirname + '/models/',
 	connectionString: 'mongodb://localhost/express-mongoose-helper-testdb',
 	debug: true

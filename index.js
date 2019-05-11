@@ -129,18 +129,18 @@ function helper(app,userOptions){
         inject.push(options.inject[i]);//now allow user supplied variables to be injected. 
     }
 
-    console.log(options.path);
+    options.log('`express-mongoose-helper` is loading files from '+options.path);
     
     fs.readdir(options.path,(err,files)=>{
 
-        console.log(files);
+        options.log(files);
 
         if(err) {
             throw err;// throw it up throw it up
         }
 
         if(!Array.isArray(files)) {
-            options.log('no models to load');
+            options.log('`express-mongoose-helper` no models to load');
         }else{
             files.forEach((file)=>{
 
