@@ -91,7 +91,7 @@ function helper(app,userOptions){
     if(semverGreaterThan(mongoose.version,'4.11.0') && !semverGreaterThan(mongoose.version,'5.0.0')){
         options.connectionOptions.useMongoClient = true;// opt into mongoose >4.11 new connection logic, but wait, it can't be over version 5  
     }
-    if(semverGreaterThan,mongoose.version,'5.5.5'){
+    if(semverGreaterThan(mongoose.version,'5.5.5')){
         options.connectionOptions.useFindAndModify = true;
     }
     
