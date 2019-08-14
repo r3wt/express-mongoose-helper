@@ -1,6 +1,6 @@
 {
   "name": "express-mongoose-helper",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "simply for your express/mongoose app with autoloaded models that are accessed through the express app instance.",
   "main": "index.js",
   "directories": {
