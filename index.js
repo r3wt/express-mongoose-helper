@@ -92,7 +92,7 @@ function helper(app,userOptions){
         options.connectionOptions.useMongoClient = true;// opt into mongoose >4.11 new connection logic, but wait, it can't be over version 5  
     }
     if(semverGreaterThan(mongoose.version,'5.5.5')){
-        options.connectionOptions.useFindAndModify = true;
+        options.connectionOptions.useFindAndModify = false;
     }
     
     options.connectionOptions.useNewUrlParser = true;
