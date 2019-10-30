@@ -22,7 +22,7 @@
   "license": "MIT",
   "devDependencies": {
     "express": "^4.14.0",
-    "mongoose": "^4.7.2"
+    "mongoose": "^5.7.7"
   },
   "dependencies": {}
 }
